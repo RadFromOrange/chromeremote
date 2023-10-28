@@ -18,3 +18,28 @@ replace localhost:9222 with nginx ssl proxy psychic-acorn-wg5w44r9jgpf5q44-14443
 replace ws with wss
 
 https://psychic-acorn-wg5w44r9jgpf5q44-9222.app.github.dev/devtools/inspector.html?wss=psychic-acorn-wg5w44r9jgpf5q44-14443.app.github.dev/devtools/page/7B5A326C00968CB341D9937F4FD01571
+
+
+VNC novnc
+
+install novnc server 
+
+./utils/novnc_proxy 
+
+install vncserver sudo apt install tigervnc-standalone-server tigervnc-common tightvncserver 
+
+vncpasswd
+vncserver -localhost no
+
+vim  ~/.vnc/xstartup
+
+exmaple of ~/.vnc/xstartup:
+------------
+#!/bin/sh
+startfluxbox & xterm & /home/codespace/.cache/puppeteer/chrome/linux-118.0.5993.70/chrome-linux64/chrome --no-sandbox --disable-dev-shm-usage --disable-software-rasterizer --disable-gpu --remote-debugging-port=9222 https://www.google.com
+---------------
+vncserver -rfbport 5900
+
+
+
+
