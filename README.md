@@ -11,6 +11,21 @@ sudo nginx  -c /workspaces/puppeteer-extra-plugin-portal/zebi.conf
 
 through external chrome :
 
+https://zany-goldfish-4wvxrrjg97pcqr5w-9222.app.github.dev/json/list  ---> 
+
+[ {
+   "description": "",
+   "devtoolsFrontendUrl": "/devtools/inspector.html?ws=localhost:9222/devtools/page/3577313413AD010B80AB8F344996C00A",
+   "id": "3577313413AD010B80AB8F344996C00A",
+   "title": "Directory listing for /",
+   "type": "page",
+   "url": "http://127.0.0.1:8000/",
+   "webSocketDebuggerUrl": "ws://localhost:9222/devtools/page/3577313413AD010B80AB8F344996C00A"
+} ]
+
+
+https://zany-goldfish-4wvxrrjg97pcqr5w-14443.app.github.dev/devtools/inspector.html?wss=zany-goldfish-4wvxrrjg97pcqr5w-14443.app.github.dev/devtools/page/3577313413AD010B80AB8F344996C00A
+
 
 https://psychic-acorn-wg5w44r9jgpf5q44-9222.app.github.dev/devtools/inspector.html?ws=localhost:9222/devtools/page/7B5A326C00968CB341D9937F4FD01571
 
