@@ -1,28 +1,41 @@
-FROM ubuntu
+FROM ubuntu:22.04
 
-# Set environment variable to avoid interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
+# Add additional package repositories
+# RUN sed -i 's/# deb-src/deb-src/' /etc/apt/sources.list
+# RUN echo "deb http://archive.ubuntu.com/ubuntu/ jammy main universe multiverse" >> /etc/apt/sources.list
+COPY kasmvncserver_jammy_1.3.1_amd64.deb /tmp/package.deb
 
-# Install necessary packages including Git, Python 3, and Thorium browser dependencies
-RUN apt-get update && apt-get install -qqy x11-apps x11vnc xvfb wget net-tools git python3 libgbm1 unzip
+# Install necessary packages
+RUN apt-get update sudo && \
+    apt-get install -y --no-install-recommends  libdatetime-perl
 
-# Download Thorium browser and extract it
-RUN  rm -fv /etc/apt/sources.list.d/thorium.list &&  wget --no-hsts -P /etc/apt/sources.list.d/  http://dl.thorium.rocks/debian/dists/stable/thorium.list &&  apt update &&  apt install -y thorium-browser
+RUN sudo addgroup $USER ssl-cert
 
-# Expose port 5900 for VNC
-EXPOSE 5900
 
-# Set up Xvfb and x11vnc
-RUN mkdir ~/.vnc \
-    && x11vnc -storepasswd 1234 ~/.vnc/passwd
+RUN apt-get install -y --no-install-recommends  /tmp/package.deb
 
-# Download and extract noVNC files
-RUN mkdir -p /usr/share/novnc \
-    && wget -qO- https://github.com/novnc/noVNC/archive/v1.2.0.tar.gz | tar xz --strip 1 -C /usr/share/novnc
+# Copy the Debian package into the container
 
-# Set up a startup script to start x11vnc, Thorium browser, and noVNC
-COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
 
-# Start Xvfb, x11vnc, Thorium browser, and noVNC server when container starts
-CMD ["/usr/local/bin/start.sh"]
+# Use apt-rdepends to list dependencies recursively
+# RUN apt-rdepends -r --package /tmp/package.deb | grep -v "^ " | grep -v "^The following NEW packages will be installed" | xargs apt-get install -y
+
+# Install the Debian package
+# RUN dpkg -i /tmp/package.deb
+
+# Set working directory
+WORKDIR /output
+
+
+# Copy the installed binaries and required dependencies to a local folder
+RUN mkdir -p bin lib share
+RUN ls /output
+RUN cp -r -L  --no-dereference /usr/bin/* /output/bin
+ RUN   cp -r  --no-dereference -L /usr/lib/* /output/lib 
+ RUN   cp -r  --no-dereference  -L /usr/lib64/* /output/lib
+ RUN   cp -r /usr/share/* /output/share
+#  RUN   cp -r /usr/local/bin/* /output/bin 
+#  RUN   cp -r /usr/local/lib/* /output/lib 
+#   RUN   cp -r /usr/local/lib64/* /output/lib
+
+VOLUME ["/zebi"]
