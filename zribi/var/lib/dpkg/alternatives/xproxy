@@ -1,0 +1,9 @@
+auto
+/usr/bin/xproxy
+xproxy.1.gz
+/usr/share/man/man1/xproxy.1.gz
+
+/usr/bin/kasmxproxy
+90
+/usr/share/man/man1/kasmxproxy.1.gz
+

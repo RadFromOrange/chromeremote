@@ -1,0 +1,9 @@
+auto
+/usr/bin/vncconfig
+vncconfig.1.gz
+/usr/share/man/man1/vncconfig.1.gz
+
+/usr/bin/kasmvncconfig
+90
+/usr/share/man/man1/kasmvncconfig.1.gz
+

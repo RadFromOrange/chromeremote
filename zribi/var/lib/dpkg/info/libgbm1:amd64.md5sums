@@ -1,0 +1,6 @@
+b9497f24ce7541c37322e9e010e784f6  usr/lib/x86_64-linux-gnu/libgbm.so.1.0.0
+7f0d95ab544ef194372363bb93229ede  usr/share/bug/libgbm1/control
+114f277e413ffae0a725cc024a955b47  usr/share/bug/libgbm1/script
+6fb665e1379285a8ce29e52b42c96e90  usr/share/doc/libgbm1/changelog.Debian.gz
+d63634382a6104b7ac6e8d0fb50ebc17  usr/share/doc/libgbm1/copyright
+5e7f4179767e22980f8e7f7fff30d658  usr/share/lintian/overrides/libgbm1
