@@ -1,0 +1,10 @@
+update-alternatives 2024-04-08 20:32:55: run with --install /usr/bin/vncserver vncserver /usr/bin/kasmvncserver 90 --slave /usr/share/man/man1/vncserver.1.gz vncserver.1.gz /usr/share/man/man1/kasmvncserver.1.gz
+update-alternatives 2024-04-08 20:32:55: link group vncserver updated to point to /usr/bin/kasmvncserver
+update-alternatives 2024-04-08 20:32:55: run with --install /usr/bin/vncpasswd vncpasswd /usr/bin/kasmvncpasswd 90 --slave /usr/share/man/man1/vncpasswd.1.gz vncpasswd.1.gz /usr/share/man/man1/kasmvncpasswd.1.gz
+update-alternatives 2024-04-08 20:32:55: link group vncpasswd updated to point to /usr/bin/kasmvncpasswd
+update-alternatives 2024-04-08 20:32:55: run with --install /usr/bin/vncconfig vncconfig /usr/bin/kasmvncconfig 90 --slave /usr/share/man/man1/vncconfig.1.gz vncconfig.1.gz /usr/share/man/man1/kasmvncconfig.1.gz
+update-alternatives 2024-04-08 20:32:55: link group vncconfig updated to point to /usr/bin/kasmvncconfig
+update-alternatives 2024-04-08 20:32:55: run with --install /usr/bin/Xvnc Xvnc /usr/bin/Xkasmvnc 90 --slave /usr/share/man/man1/Xvnc.1.gz Xvnc.1.gz /usr/share/man/man1/Xkasmvnc.1.gz
+update-alternatives 2024-04-08 20:32:55: link group Xvnc updated to point to /usr/bin/Xkasmvnc
+update-alternatives 2024-04-08 20:32:55: run with --install /usr/bin/xproxy xproxy /usr/bin/kasmxproxy 90 --slave /usr/share/man/man1/xproxy.1.gz xproxy.1.gz /usr/share/man/man1/kasmxproxy.1.gz
+update-alternatives 2024-04-08 20:32:55: link group xproxy updated to point to /usr/bin/kasmxproxy

@@ -1,0 +1,15 @@
+/.
+/usr
+/usr/share
+/usr/share/doc
+/usr/share/doc/libhash-merge-simple-perl
+/usr/share/doc/libhash-merge-simple-perl/changelog.Debian.gz
+/usr/share/doc/libhash-merge-simple-perl/changelog.gz
+/usr/share/doc/libhash-merge-simple-perl/copyright
+/usr/share/man
+/usr/share/man/man3
+/usr/share/man/man3/Hash::Merge::Simple.3pm.gz
+/usr/share/perl5
+/usr/share/perl5/Hash
+/usr/share/perl5/Hash/Merge
+/usr/share/perl5/Hash/Merge/Simple.pm

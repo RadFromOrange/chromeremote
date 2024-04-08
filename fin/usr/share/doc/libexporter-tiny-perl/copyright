@@ -1,0 +1,111 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Exporter::Tiny
+Upstream-Contact: https://rt.cpan.org/Dist/Display.html?Queue=Exporter-Tiny
+ mailto:bug-Exporter-Tiny@rt.cpan.org
+ irc://irc.perl.org/#moops
+Source: https://metacpan.org/release/Exporter-Tiny
+ https://github.com/tobyink/p5-exporter-tiny
+
+Files: *
+Copyright:
+  2013-2014, 2017-2018, 2020, 2022  Toby Inkster <tobyink@cpan.org>
+License-Grant:
+ This is free software;
+ you can redistribute it and/or modify it
+ under the same terms as the Perl 5 programming language system itself.
+License: Artistic or GPL-1+
+Comment:
+ Perl 5 is licensed under either the Artistic license
+ or the GNU General Public License version 1 or later.
+
+Files:
+ inc/archaic/Test/More.pm
+ inc/archaic/Test/Simple.pm
+Copyright:
+  2001-2008  Michael G Schwern <schwern@pobox.com>
+License: Artistic or GPL-1+
+
+Files:
+ inc/Try/Tiny.pm
+Copyright:
+  2014  Yuval Kogman <nothingmuch@woobling.org>
+License-Grant:
+ This is free software, licensed under:
+ The MIT (X11) License
+License: Expat
+
+Files:
+ inc/archaic/Test/Builder/IO/Scalar.pm
+Copyright:
+  1996       Eryq
+  1999, 2001 ZeeGee Software Inc.
+License: Artistic or GPL-1+
+
+Files:
+ inc/archaic/Test/Builder/Tester.pm
+Copyright:
+  2002, 2004  Mark Fowler <mark@twoshortplanks.com>
+  2001        Michael G Schwern <schwern@pobox.com>
+License: Artistic or GPL-1+
+
+Files:
+ inc/archaic/Test/Builder/Tester/Color.pm
+Copyright:
+  2002  Mark Fowler <mark@twoshortplanks.com>
+License: Artistic or GPL-1+
+
+Files:
+ inc/archaic/Test/Builder.pm
+Copyright:
+  2002-2008  chromatic <chromatic@wgz.org>
+  2002-2008  Michael G Schwern <schwern@pobox.com>
+License: Artistic or GPL-1+
+
+Files:
+ debian/*
+Copyright:
+  2018             intrigeri <intrigeri@debian.org>
+  2014-2015, 2023  Jonas Smedegaard <dr@jones.dk>
+License-Grant:
+ This program is free software;
+ you can redistribute it and/or modify it
+ under the terms of the GNU General Public License
+ as published by the Free Software Foundation;
+ either version 3, or (at your option) any later version.
+License: GPL-3+
+Reference: debian/copyright
+
+License: Artistic
+Reference: /usr/share/common-licenses/Artistic
+
+License: Expat
+ Permission is hereby granted, free of charge,
+ to any person obtaining a copy
+ of this software and associated documentation files (the "Software"),
+ to deal in the Software without restriction,
+ including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense,
+ and/or sell copies of the Software,
+ and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+ .
+ The above copyright notice and this permission notice
+ shall be included in all copies or substantial portions
+ of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS",
+ WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ INCLUDING BUT NOT LIMITED TO
+ THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+ AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
+ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+License: GPL-1+
+Reference: /usr/share/common-licenses/GPL-1
+
+License: GPL-3+
+Reference: /usr/share/common-licenses/GPL-3
