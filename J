@@ -1,0 +1,11 @@
+CPU_USAGE=$(cat /sys/fs/cgroup/cpu/cpuacct.usage)        # Total CPU time consumed in nanoseconds
+CPU_QUOTA=$(cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us)     # Max CPU time the pod can use in microseconds (per period)
+CPU_PERIOD=$(cat /sys/fs/cgroup/cpu/cpu.cfs_period_us)   # The length of the period in microseconds
+
+if [ "$CPU_QUOTA" -gt 0 ]; then
+    # Calculate the number of CPU cores assigned to the pod
+    CPU_CORES=$(echo "scale=2; $CPU_QUOTA / $CPU_PERIOD" | bc)
+    echo "CPU Usage (cores): $CPU_CORES"
+else
+    echo "CPU Usage (cores): Unlimited"
+fi
