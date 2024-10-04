@@ -10,3 +10,19 @@ CPU_DELTA=$(($CUR_USAGE - $PREV_USAGE))
 CORES_USED=$((CPU_DELTA / 1000000000))
 
 echo "CPU Usage (cores over 1 second): $CORES_USED"
+
+
+PREV_USAGE=$(cat /sys/fs/cgroup/cpu/cpuacct.usage)
+sleep 1  # Sleep for 1 second to measure CPU usage over time
+CUR_USAGE=$(cat /sys/fs/cgroup/cpu/cpuacct.usage)
+
+# Calculate CPU usage in nanoseconds during the interval
+CPU_DELTA=$(($CUR_USAGE - $PREV_USAGE))
+
+# Convert nanoseconds to core usage and multiply by 100 to preserve 2 decimals
+CORES_USED=$((100 * CPU_DELTA / 1000000000))
+
+# Convert integer to a floating point number with two decimals
+CPU_CORES_USED="$((CORES_USED / 100)).$((CORES_USED % 100))"
+
+echo "CPU Usage (cores over 1 second): $CPU_CORES_USED"
