@@ -1,0 +1,134 @@
+// service-worker.js
+
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.5.4/workbox-sw.js');
+
+workbox.setConfig({
+  debug: false
+});
+
+// Intercepter et modifier les requêtes HTTP/HTTPS
+workbox.routing.registerRoute(
+  ({ request }) => request.url.origin !== self.location.origin,
+  new workbox.strategies.NetworkFirst({
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 100,
+        maxAgeSeconds: 30 * 24 * 60 * 60 // 30 jours
+      }),
+      {
+        requestWillFetch: async ({ request }) => {
+          // Ajouter un préfixe à l'URL de la requête
+          const url = new URL(request.url);
+          url.pathname = `/proxy/${url.pathname}`;
+          return new Request(url.toString(), request);
+        }
+      }
+    ]
+  })
+);
+
+// Intercepter les liens (link)
+workbox.routing.registerRoute(
+  ({ request }) => request.destination === 'style',
+  new workbox.strategies.NetworkFirst({
+    plugins: [
+      {
+        requestWillFetch: async ({ request }) => {
+          const url = new URL(request.url);
+          url.pathname = `/proxy/${url.pathname}`;
+          return new Request(url.toString(), request);
+        }
+      }
+    ]
+  })
+);
+
+// Intercepter les sources d'images (src)
+workbox.routing.registerRoute(
+  ({ request }) => request.destination === 'image',
+  new workbox.strategies.NetworkFirst({
+    plugins: [
+      {
+        requestWillFetch: async ({ request }) => {
+          const url = new URL(request.url);
+          url.pathname = `/proxy/${url.pathname}`;
+          return new Request(url.toString(), request);
+        }
+      }
+    ]
+  })
+);
+
+// Intercepter les appels AJAX et Fetch
+workbox.routing.registerRoute(
+  ({ request }) => request.destination === 'script' || request.destination === 'xhr',
+  new workbox.strategies.NetworkFirst({
+    plugins: [
+      {
+        requestWillFetch: async ({ request }) => {
+          const url = new URL(request.url);
+          url.pathname = `/proxy/${url.pathname}`;
+          return new Request(url.toString(), request);
+        }
+      }
+    ]
+  })
+);
+
+// Intercepter les WebSockets
+workbox.routing.registerRoute(
+  ({ request }) => request.destination === 'websocket',
+  new workbox.strategies.NetworkFirst({
+    plugins: [
+      {
+        requestWillFetch: async ({ request }) => {
+          const url = new URL(request.url);
+          url.pathname = `/proxy/${url.pathname}`;
+          return new Request(url.toString(), request);
+        }
+      }
+    ]
+  })
+);
+
+// Activer le service worker
+workbox.core.clientsClaim();
+workbox.core.skipWaiting();
+
+
+
+
+
+
+
+
+Les différentes valeurs possibles pour la propriété `request.destination` sont définies dans la spécification du Fetch API. Voici la liste complète des valeurs possibles avec leurs descriptions :
+
+Référence : [Fetch API Specification - Request.destination](https://fetch.spec.whatwg.org/#concept-request-destination)
+
+Valeurs possibles pour `request.destination` :
+
+- `"document"`: La requête est destinée à charger un document.
+- `"embed"`: La requête est destinée à charger un élément `<embed>`.
+- `"font"`: La requête est destinée à charger une police de caractères.
+- `"image"`: La requête est destinée à charger une image.
+- `"manifest"`: La requête est destinée à charger un manifeste de l'application.
+- `"media"`: La requête est destinée à charger un élément multimédia (audio ou vidéo).
+- `"object"`: La requête est destinée à charger un élément `<object>`.
+- `"paintworklet"`: La requête est destinée à charger un Worklet de peinture.
+- `"report"`: La requête est destinée à envoyer un rapport.
+- `"script"`: La requête est destinée à charger un script.
+- `"sharedworker"`: La requête est destinée à charger un SharedWorker.
+- `"style"`: La requête est destinée à charger une feuille de style CSS.
+- `"track"`: La requête est destinée à charger une piste de sous-titres ou de description audio.
+- `"video"`: La requête est destinée à charger une vidéo.
+- `"worker"`: La requête est destinée à charger un Worker.
+- `"xhr"`: La requête est destinée à un appel XMLHttpRequest.
+- `"websocket"`: La requête est destinée à une connexion WebSocket.
+- `""` (chaîne vide) : La destination de la requête n'est pas connue.
+
+Ces valeurs peuvent être utilisées dans votre service worker pour identifier le type de ressource demandée et appliquer des traitements spécifiques si nécessaire.
+
+
+
+https://developer.chrome.com/docs/workbox/modules/workbox-routing
