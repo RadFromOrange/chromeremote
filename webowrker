@@ -131,4 +131,38 @@ Ces valeurs peuvent être utilisées dans votre service worker pour identifier l
 
 
 
+
+
 https://developer.chrome.com/docs/workbox/modules/workbox-routing
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Proxy Example</title>
+</head>
+<body>
+  <h1>Proxy Example</h1>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('Service Worker registered:', registration.scope);
+          })
+          .catch(error => {
+            console.error('Service Worker registration failed:', error);
+          });
+      });
+    } else {
+      console.log('Service Worker is not supported in this browser.');
+    }
+  </script>
+
+  <img src="https://example.com/image.jpg" alt="Example Image">
+  <link rel="stylesheet" href="https://example.com/style.css">
+  <script src="https://example.com/script.js"></script>
+</body>
+</html>
+
