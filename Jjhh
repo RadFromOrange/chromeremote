@@ -1,0 +1,1 @@
+cat /proc/net/tcp /proc/net/udp | awk '{print $2}' | grep -o ':[0-9]*' | sed 's/^://' | sort -n | uniq
