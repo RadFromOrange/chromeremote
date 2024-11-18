@@ -1,0 +1,40 @@
+http {
+    # Define a map for allowed origins
+    map $http_origin $cors_allowed_origin {
+        default "";
+        "https://allowed-domain1.com" $http_origin;
+        "https://allowed-domain2.com" $http_origin;
+        "https://allowed-domain3.com" $http_origin;
+    }
+
+    server {
+        listen 80;
+        server_name your-server.com;
+
+        location /api/ {
+            proxy_pass http://backend-service:port;
+
+            # Dynamically set the Access-Control-Allow-Origin header
+            if ($cors_allowed_origin != "") {
+                add_header 'Access-Control-Allow-Origin' $cors_allowed_origin;
+                add_header 'Access-Control-Allow-Credentials' 'true';
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE';
+                add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Authorization';
+            }
+
+            # Handle preflight requests
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' $cors_allowed_origin;
+                add_header 'Access-Control-Allow-Credentials' 'true';
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE';
+                add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Authorization';
+                add_header 'Access-Control-Max-Age' 1728000;
+                return 204;
+            }
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}
