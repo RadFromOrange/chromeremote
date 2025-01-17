@@ -1,0 +1,29 @@
+import requests
+import sys
+
+def download_vsix(extension_id, version):
+    # Construct the URL for the vsix file
+    url = f"https://marketplace.visualstudio.com/_apis/public/gallery/publishers/{extension_id.split('.')[0]}/vsextensions/{extension_id.split('.')[1]}/{version}/vspackage"
+    
+    # Send a GET request to the URL
+    response = requests.get(url, allow_redirects=True)
+    
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Save the vsix file
+        vsix_filename = f"{extension_id}-{version}.vsix"
+        with open(vsix_filename, 'wb') as f:
+            f.write(response.content)
+        print(f"Downloaded {vsix_filename}")
+    else:
+        print(f"Failed to download the vsix file. Status code: {response.status_code}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python download_vsix.py <extension_id> <version>")
+        sys.exit(1)
+    
+    extension_id = sys.argv[1]
+    version = sys.argv[2]
+    
+    download_vsix(extension_id, version)
