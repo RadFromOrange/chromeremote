@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# 📌 Get input arguments
+FOLDER_TO_BUILD=$1
+VM_DISK="toto.qcow2"
+VM_RAM="2024"
+VM_SSH_PORT="2222"
+VM_USER="root"
+SHARED_FOLDER="/tmp/qemu-shared"
+
+# 🔴 Validate Input
+if [[ -z "$FOLDER_TO_BUILD" ]]; then
+    echo "Usage: $0 <folder-to-build>"
+    exit 1
+fi
+
+if [[ ! -d "$FOLDER_TO_BUILD" ]]; then
+    echo "Error: Folder '$FOLDER_TO_BUILD' does not exist!"
+    exit 1
+fi
+
+# 🟢 Ensure shared folder exists on host
+mkdir -p "$SHARED_FOLDER"
+cp -r "$FOLDER_TO_BUILD"/* "$SHARED_FOLDER/"
+
+# 🟢 Start QEMU VM with 9p VirtFS Shared Folder
+qemu-system-x86_64 \
+  -m "$VM_RAM" \
+  -drive file="$VM_DISK",format=qcow2 \
+  -nographic \
+  -netdev user,id=net0,hostfwd=tcp::"$VM_SSH_PORT"-:22 \
+  -device virtio-net-pci,netdev=net0 \
+  -virtfs local,path="$SHARED_FOLDER",mount_tag=shared_folder,security_model=mapped \
+  &
+
+# ⏳ Wait for VM to boot
+sleep 10
+
+# 🟢 Mount the Shared Folder in the VM
+ssh -p "$VM_SSH_PORT" "$VM_USER"@localhost << EOF
+  mkdir -p /mnt/shared
+  sudo mount -t 9p -o trans=virtio shared_folder /mnt/shared
+  cd /mnt/shared
+  docker build -t my-image .
+EOF
+
+echo "✅ Docker build completed inside QEMU. Check /mnt/shared for results."
