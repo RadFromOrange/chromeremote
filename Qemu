@@ -1,0 +1,1 @@
+qemu-system-x86_64 -m 5G -smp 3,sockets=1,cores=3,threads=1 -device virtio-net-pci,netdev=net0 -netdev user,id=net0 -drive file=alpine.raw,format=raw,cache=writeback -virtfs local,path=/workspaces/OliveTin/toutou/share,security_model=mapped-xattr,mount_tag=hostshare,multidevs=remap  -nographic -monitor telnet:127.0.0.1:4444,server,nowait
