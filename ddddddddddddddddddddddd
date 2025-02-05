@@ -1,0 +1,75 @@
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+# Set maximum file size to 5 MB
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    # Check if the file part is present in the request
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    # Optionally, you can process or save the file here
+    return jsonify({'message': 'File uploaded successfully!'}), 200
+
+# Custom error handler for file size limit exceeded
+@app.errorhandler(413)
+def file_too_large(error):
+    return jsonify({'error': 'File too large. Max file size is 5MB'}), 413
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+dd if=/dev/zero of=test_file.bin bs=1M count=6 or python -c "with open('test_file.bin', 'wb') as f: f.write(b'\0' * 6 * 1024 * 1024)"
+
+curl -F "file=@test_file.bin" http://localhost:5000/upload
+
+
+qemu-system-x86_64 \
+  -machine type=pc,accel=tcg,usb=off \
+  -cpu host \
+  -smp 2 \
+  -m 1024 \
+  -drive file=/path/to/disk.img,if=none,format=raw,cache=writeback,io=native \
+  -device virtio-blk-pci,drive=drive0,queues=4,queue_size=1024 \
+  -netdev user,id=net0 \
+  -device virtio-net-pci,netdev=net0
+
+
+qemu-system-x86_64 \
+  -machine type=pc,accel=tcg,usb=off \
+  -cpu host \
+  -smp 2 \
+  -m 1024 \
+  -drive file=/path/to/disk.img,if=none,format=raw,cache=writeback,io=native \
+  -device virtio-blk-pci,drive=drive0,queues=4,queue_size=1024 \
+  -netdev user,id=net0,hostfwd=tcp::1445-:445 \
+  -device virtio-net-pci,netdev=net0
+
+qemu-system-x86_64 \
+  -machine type=pc,accel=tcg,usb=off \
+  -cpu host \
+  -smp 2 \
+  -m 1024 \
+  -drive file=/path/to/disk.img,if=none,format=raw,cache=writeback,io=native \
+  -device virtio-blk-pci,drive=drive0,queues=4,queue_size=1024 \
+  -netdev user,id=net0,smb=/path/to/host/share \
+  -device virtio-net-pci,netdev=net0
+[share]
+   path = /srv/samba/share
+   browseable = yes
+   read only = no
+   guest ok = yes
+
+
+sudo apt install samba samba-common-bin
+
+
+sudo mount -t 9p -o trans=virtio,version=9p2000.L,msize=262144,cache=loose hostshare /mnt/hostshare
+
+
