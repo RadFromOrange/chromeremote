@@ -70,6 +70,12 @@ qemu-system-x86_64 \
 sudo apt install samba samba-common-bin
 
 
+https://gitlab.com/virtio-fs/virtiofsd#running-as-non-privileged-user
+
+/workspaces/proot-distro/virtiofsd  --socket-path=/tmp/vfsd.sock --shared-dir ./completions --sandbox none   --announce-submounts --inode-file-handles=mandatory
+
+
+
 sudo mount -t 9p -o trans=virtio,version=9p2000.L,msize=262144,cache=loose hostshare /mnt/hostshare
 
 
