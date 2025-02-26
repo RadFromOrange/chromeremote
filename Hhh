@@ -1,0 +1,271 @@
+import sys
+import json
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QWidget, 
+                             QPushButton, QMessageBox, QComboBox, QLabel, QHBoxLayout)
+from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtCore import Qt
+from PyQt5.Qsci import QsciScintilla, QsciLexerJSON
+
+
+class CompactJsonFormatter:
+    @staticmethod
+    def format_json(json_str, compact=True):
+        """Format JSON with customizable compactness"""
+        try:
+            parsed = json.loads(json_str)
+            if compact:
+                # More compact formatting with less whitespace
+                return json.dumps(parsed, indent=2, separators=(',', ': '))
+            else:
+                # Standard formatting
+                return json.dumps(parsed, indent=4)
+        except json.JSONDecodeError as e:
+            raise e
+
+
+class JsonEditor(QsciScintilla):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        
+        # Set up the editor
+        self.setup_editor()
+        self.setup_json_lexer()
+        self.compact_mode = True
+        
+    def setup_editor(self):
+        # General editor settings
+        self.setUtf8(True)
+        self.setFont(QFont("Consolas", 10))
+        
+        # Line numbers
+        self.setMarginType(0, QsciScintilla.NumberMargin)
+        self.setMarginWidth(0, "000")
+        self.setMarginsForegroundColor(QColor("#AAAAAA"))
+        
+        # Auto indentation
+        self.setAutoIndent(True)
+        self.setIndentationsUseTabs(False)
+        self.setTabWidth(2)
+        
+        # Set a dark theme base
+        self.setColor(QColor("#F8F8F2"))  # Text color
+        self.setPaper(QColor("#282A36"))  # Background color
+        self.setMarginBackgroundColor(QColor("#282A36"))
+        
+        # Brace matching
+        self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
+        self.setMatchedBraceBackgroundColor(QColor("#44475A"))
+        self.setMatchedBraceForegroundColor(QColor("#50FA7B"))
+        
+        # Current line highlighting
+        self.setCaretLineVisible(True)
+        self.setCaretLineBackgroundColor(QColor("#44475A"))
+        self.setCaretForegroundColor(QColor("#F8F8F2"))
+        
+        # Selection color
+        self.setSelectionBackgroundColor(QColor("#44475A"))
+        self.setSelectionForegroundColor(QColor("#F8F8F2"))
+        
+    def setup_json_lexer(self):
+        # Use the JSON lexer
+        lexer = QsciLexerJSON()
+        lexer.setDefaultFont(QFont("Consolas", 10))
+        
+        # Set lexer colors (Dracula theme inspired)
+        lexer.setColor(QColor("#F8F8F2"), 0)  # Default
+        lexer.setColor(QColor("#FF79C6"), 1)  # Number
+        lexer.setColor(QColor("#F1FA8C"), 2)  # String
+        lexer.setColor(QColor("#BD93F9"), 3)  # Unclosed string
+        lexer.setColor(QColor("#8BE9FD"), 4)  # Property
+        lexer.setColor(QColor("#50FA7B"), 5)  # Escape sequence
+        lexer.setColor(QColor("#FFB86C"), 6)  # JSON object key name
+        lexer.setColor(QColor("#FF79C6"), 7)  # Line comment
+        lexer.setColor(QColor("#FF79C6"), 8)  # Block comment
+        lexer.setColor(QColor("#FF5555"), 9)  # Operator
+        lexer.setColor(QColor("#BD93F9"), 10) # Identifier of IRI
+        lexer.setColor(QColor("#FF5555"), 11) # JSON keyword
+        lexer.setColor(QColor("#6272A4"), 12) # JSON-LD keyword
+        lexer.setColor(QColor("#F1FA8C"), 13) # Parsing error
+        
+        # Set lexer paper colors (backgrounds)
+        for i in range(14):
+            lexer.setPaper(QColor("#282A36"), i)  # Dark background for all styles
+            
+        self.setLexer(lexer)
+    
+    def insertFromMimeData(self, source):
+        """Override to format JSON when pasting content"""
+        if source.hasText():
+            text = source.text()
+            try:
+                formatted_json = CompactJsonFormatter.format_json(text, self.compact_mode)
+                self.insert(formatted_json)
+            except json.JSONDecodeError:
+                # If not valid JSON, just paste the original text
+                super().insertFromMimeData(source)
+        else:
+            super().insertFromMimeData(source)
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Enhanced JSON Editor")
+        self.setGeometry(100, 100, 900, 700)
+        
+        # Create central widget and layout
+        central_widget = QWidget()
+        main_layout = QVBoxLayout(central_widget)
+        
+        # Create JSON editor
+        self.json_editor = JsonEditor()
+        main_layout.addWidget(self.json_editor)
+        
+        # Create controls layout
+        controls_layout = QHBoxLayout()
+        
+        # Format button
+        format_button = QPushButton("Format JSON")
+        format_button.clicked.connect(self.format_json)
+        controls_layout.addWidget(format_button)
+        
+        # Format type selector
+        controls_layout.addWidget(QLabel("Format Style:"))
+        self.format_selector = QComboBox()
+        self.format_selector.addItems(["Compact", "Standard"])
+        self.format_selector.currentIndexChanged.connect(self.change_format_style)
+        controls_layout.addWidget(self.format_selector)
+        
+        # Theme selector
+        controls_layout.addWidget(QLabel("Theme:"))
+        self.theme_selector = QComboBox()
+        self.theme_selector.addItems(["Dracula (Dark)", "Solarized (Dark)", "Light"])
+        self.theme_selector.currentIndexChanged.connect(self.change_theme)
+        controls_layout.addWidget(self.theme_selector)
+        
+        controls_layout.addStretch(1)
+        main_layout.addLayout(controls_layout)
+        
+        # Set the central widget
+        self.setCentralWidget(central_widget)
+    
+    def format_json(self):
+        try:
+            text = self.json_editor.text()
+            if not text.strip():
+                return
+                
+            compact = self.format_selector.currentIndex() == 0
+            formatted_json = CompactJsonFormatter.format_json(text, compact)
+            
+            # Set the formatted text
+            self.json_editor.setText(formatted_json)
+            
+        except json.JSONDecodeError as e:
+            QMessageBox.warning(self, "Invalid JSON", f"The text is not valid JSON: {str(e)}")
+    
+    def change_format_style(self, index):
+        self.json_editor.compact_mode = (index == 0)
+        self.format_json()
+    
+    def change_theme(self, index):
+        if index == 0:  # Dracula
+            self.apply_dracula_theme()
+        elif index == 1:  # Solarized Dark
+            self.apply_solarized_dark_theme()
+        else:  # Light
+            self.apply_light_theme()
+    
+    def apply_dracula_theme(self):
+        # Editor base
+        self.json_editor.setColor(QColor("#F8F8F2"))
+        self.json_editor.setPaper(QColor("#282A36"))
+        self.json_editor.setMarginBackgroundColor(QColor("#282A36"))
+        self.json_editor.setMarginsForegroundColor(QColor("#AAAAAA"))
+        
+        # Highlights
+        self.json_editor.setCaretLineBackgroundColor(QColor("#44475A"))
+        self.json_editor.setCaretForegroundColor(QColor("#F8F8F2"))
+        self.json_editor.setSelectionBackgroundColor(QColor("#44475A"))
+        self.json_editor.setSelectionForegroundColor(QColor("#F8F8F2"))
+        
+        # Lexer colors
+        lexer = self.json_editor.lexer()
+        if lexer:
+            lexer.setColor(QColor("#F8F8F2"), 0)  # Default
+            lexer.setColor(QColor("#FF79C6"), 1)  # Number
+            lexer.setColor(QColor("#F1FA8C"), 2)  # String
+            lexer.setColor(QColor("#BD93F9"), 3)  # Unclosed string
+            lexer.setColor(QColor("#8BE9FD"), 4)  # Property
+            lexer.setColor(QColor("#50FA7B"), 5)  # Escape sequence
+            lexer.setColor(QColor("#FFB86C"), 6)  # Object key name
+            lexer.setColor(QColor("#FF79C6"), 7)  # Line comment
+            
+            # Set background colors
+            for i in range(14):
+                lexer.setPaper(QColor("#282A36"), i)
+    
+    def apply_solarized_dark_theme(self):
+        # Editor base
+        self.json_editor.setColor(QColor("#839496"))
+        self.json_editor.setPaper(QColor("#002B36"))
+        self.json_editor.setMarginBackgroundColor(QColor("#002B36"))
+        self.json_editor.setMarginsForegroundColor(QColor("#657B83"))
+        
+        # Highlights
+        self.json_editor.setCaretLineBackgroundColor(QColor("#073642"))
+        self.json_editor.setCaretForegroundColor(QColor("#839496"))
+        self.json_editor.setSelectionBackgroundColor(QColor("#073642"))
+        self.json_editor.setSelectionForegroundColor(QColor("#839496"))
+        
+        # Lexer colors
+        lexer = self.json_editor.lexer()
+        if lexer:
+            lexer.setColor(QColor("#839496"), 0)   # Default
+            lexer.setColor(QColor("#2AA198"), 1)   # Number
+            lexer.setColor(QColor("#B58900"), 2)   # String
+            lexer.setColor(QColor("#CB4B16"), 3)   # Unclosed string
+            lexer.setColor(QColor("#6C71C4"), 4)   # Property
+            lexer.setColor(QColor("#859900"), 5)   # Escape sequence
+            lexer.setColor(QColor("#268BD2"), 6)   # Object key name
+            lexer.setColor(QColor("#DC322F"), 7)   # Line comment
+            
+            # Set background colors
+            for i in range(14):
+                lexer.setPaper(QColor("#002B36"), i)
+    
+    def apply_light_theme(self):
+        # Editor base
+        self.json_editor.setColor(QColor("#383A42"))
+        self.json_editor.setPaper(QColor("#FAFAFA"))
+        self.json_editor.setMarginBackgroundColor(QColor("#F0F0F0"))
+        self.json_editor.setMarginsForegroundColor(QColor("#9D9D9F"))
+        
+        # Highlights
+        self.json_editor.setCaretLineBackgroundColor(QColor("#E6E6E6"))
+        self.json_editor.setCaretForegroundColor(QColor("#000000"))
+        self.json_editor.setSelectionBackgroundColor(QColor("#D0D0D0"))
+        self.json_editor.setSelectionForegroundColor(QColor("#383A42"))
+        
+        # Lexer colors
+        lexer = self.json_editor.lexer()
+        if lexer:
+            lexer.setColor(QColor("#383A42"), 0)   # Default
+            lexer.setColor(QColor("#986801"), 1)   # Number
+            lexer.setColor(QColor("#50A14F"), 2)   # String
+            lexer.setColor(QColor("#E45649"), 3)   # Unclosed string
+            lexer.setColor(QColor("#4078F2"), 4)   # Property
+            lexer.setColor(QColor("#0184BC"), 5)   # Escape sequence
+            lexer.setColor(QColor("#A626A4"), 6)   # Object key name
+            lexer.setColor(QColor("#A0A1A7"), 7)   # Line comment
+            
+            # Set background colors
+            for i in range(14):
+                lexer.setPaper(QColor("#FAFAFA"), i)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
