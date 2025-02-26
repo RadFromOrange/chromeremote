@@ -1,0 +1,122 @@
+import sys
+import json
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QPlainTextEdit, 
+                            QVBoxLayout, QWidget, QPushButton, QMessageBox)
+from PyQt5.QtGui import QColor, QTextCharFormat, QFont, QSyntaxHighlighter
+from PyQt5.QtCore import Qt, QRegExp
+
+
+class JsonHighlighter(QSyntaxHighlighter):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.highlighting_rules = []
+
+        # Format for strings
+        string_format = QTextCharFormat()
+        string_format.setForeground(QColor("#008000"))  # Green
+        self.highlighting_rules.append((QRegExp("\".*?\""), string_format))
+
+        # Format for numbers
+        number_format = QTextCharFormat()
+        number_format.setForeground(QColor("#0000FF"))  # Blue
+        self.highlighting_rules.append((QRegExp("\\b\\d+\\.?\\d*\\b"), number_format))
+
+        # Format for keywords
+        keyword_format = QTextCharFormat()
+        keyword_format.setForeground(QColor("#800080"))  # Purple
+        keyword_format.setFontWeight(QFont.Bold)
+        keywords = ["true", "false", "null"]
+        for word in keywords:
+            pattern = QRegExp(f"\\b{word}\\b")
+            self.highlighting_rules.append((pattern, keyword_format))
+
+        # Format for brackets and braces
+        bracket_format = QTextCharFormat()
+        bracket_format.setForeground(QColor("#FF0000"))  # Red
+        bracket_format.setFontWeight(QFont.Bold)
+        self.highlighting_rules.append((QRegExp("[\\[\\]{}:,]"), bracket_format))
+
+    def highlightBlock(self, text):
+        for pattern, format in self.highlighting_rules:
+            expression = QRegExp(pattern)
+            index = expression.indexIn(text)
+            while index >= 0:
+                length = expression.matchedLength()
+                self.setFormat(index, length, format)
+                index = expression.indexIn(text, index + length)
+
+
+class JsonEditor(QPlainTextEdit):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFont(QFont("Courier", 10))
+        self.highlighter = JsonHighlighter(self.document())
+        
+    def insertFromMimeData(self, source):
+        """Override to format JSON when pasting content"""
+        if source.hasText():
+            text = source.text()
+            try:
+                # Try to parse as JSON and reformat
+                parsed_json = json.loads(text)
+                formatted_json = json.dumps(parsed_json, indent=4)
+                self.insertPlainText(formatted_json)
+            except json.JSONDecodeError:
+                # If not valid JSON, just paste the original text
+                super().insertFromMimeData(source)
+        else:
+            super().insertFromMimeData(source)
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("JSON Editor with Auto-Formatting")
+        self.setGeometry(100, 100, 800, 600)
+        
+        # Create central widget and layout
+        central_widget = QWidget()
+        layout = QVBoxLayout(central_widget)
+        
+        # Create JSON editor
+        self.json_editor = JsonEditor()
+        self.json_editor.setPlaceholderText("Paste or type JSON here. Content will be auto-formatted when pasted.")
+        layout.addWidget(self.json_editor)
+        
+        # Add a format button
+        format_button = QPushButton("Format JSON")
+        format_button.clicked.connect(self.format_json)
+        layout.addWidget(format_button)
+        
+        # Set the central widget
+        self.setCentralWidget(central_widget)
+    
+    def format_json(self):
+        try:
+            text = self.json_editor.toPlainText()
+            if not text.strip():
+                return
+                
+            parsed_json = json.loads(text)
+            formatted_json = json.dumps(parsed_json, indent=4)
+            
+            # Preserve cursor position as much as possible
+            cursor = self.json_editor.textCursor()
+            pos = cursor.position()
+            
+            self.json_editor.setPlainText(formatted_json)
+            
+            # Try to restore cursor position
+            cursor = self.json_editor.textCursor()
+            cursor.setPosition(min(pos, len(formatted_json)))
+            self.json_editor.setTextCursor(cursor)
+            
+        except json.JSONDecodeError as e:
+            QMessageBox.warning(self, "Invalid JSON", f"The text is not valid JSON: {str(e)}")
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
