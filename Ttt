@@ -1,0 +1,13 @@
+# Change these values
+PAC_FILE="/path/to/your/proxy.pac"
+TARGET_URL="http://example.com"
+
+# Extract hostname
+HOSTNAME=$(echo $TARGET_URL | sed -E 's/^.*:\/\/([^\/]+).*/\1/')
+
+# Create temp file, evaluate PAC, and clean up
+TMP_JS=$(mktemp)
+cat $PAC_FILE > $TMP_JS
+echo "console.log(FindProxyForURL(\"$TARGET_URL\", \"$HOSTNAME\"));" >> $TMP_JS
+/usr/bin/osascript -l JavaScript $TMP_JS
+rm $TMP_JS
