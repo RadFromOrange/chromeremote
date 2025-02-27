@@ -1,0 +1,9 @@
+curl -s http://example.com/proxy.pac | /usr/bin/osascript -l JavaScript -e "
+    const pac = ObjC.unwrap($.NSString.alloc.initWithDataEncoding(
+        $.NSFileHandle.fileHandleWithStandardInput.readDataToEndOfFile,
+        $.NSUTF8StringEncoding
+    ));
+    const url = 'http://example.com';
+    eval(pac);
+    console.log(FindProxyForURL(url, url.match(/\/\/([^\/]+)/)[1]));
+"
