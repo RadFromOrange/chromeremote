@@ -1,0 +1,55 @@
+cat > /tmp/pac_eval.js << 'EOF'
+// PAC file utility functions
+function myIpAddress() {
+  return "127.0.0.1"; // Default fallback
+}
+
+function dnsResolve(host) {
+  return "127.0.0.1"; // Default fallback
+}
+
+function isInNet(ip, subnet, mask) {
+  return false; // Default fallback
+}
+
+function isPlainHostName(host) {
+  return host.indexOf('.') === -1;
+}
+
+function dnsDomainIs(host, domain) {
+  return host.length >= domain.length &&
+    host.substring(host.length - domain.length) === domain;
+}
+
+function localHostOrDomainIs(host, hostdom) {
+  return host === hostdom || 
+    hostdom.lastIndexOf(host + '.', 0) === 0;
+}
+
+// Add the PAC file content here
+EOF
+
+# Append the actual PAC file content
+cat /path/to/your/proxy.pac >> /tmp/pac_eval.js
+
+# Append the evaluation code
+cat >> /tmp/pac_eval.js << EOF
+
+// URL to evaluate
+const url = "$1";
+const host = url.replace(/^https?:\/\//, '').split('/')[0];
+
+// Call the PAC file function
+try {
+  const result = FindProxyForURL(url, host);
+  console.log(result);
+} catch (e) {
+  console.log("Error evaluating PAC file: " + e.message);
+}
+EOF
+
+# Run the JavaScript file
+/usr/bin/osascript -l JavaScript /tmp/pac_eval.js
+
+# Clean up
+rm /tmp/pac_eval.js
