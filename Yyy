@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxy PAC File Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f7ef;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        #pacContent {
+            height: 200px;
+            font-family: monospace;
+            white-space: pre;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Proxy PAC File Analyzer</h1>
+        
+        <div>
+            <label for="pacUrl">PAC File URL:</label>
+            <input type="text" id="pacUrl" placeholder="https://example.com/proxy.pac">
+            
+            <button id="loadPac">Load PAC File</button>
+            <button id="parsePac">Parse PAC Content</button>
+            
+            <div id="loadingPac" class="loading" style="display: none;">Loading PAC file...</div>
+            <div id="errorPac" class="error" style="display: none;"></div>
+            
+            <label for="pacContent">PAC File Content:</label>
+            <textarea id="pacContent" placeholder="Paste PAC file content here if you don't have a URL"></textarea>
+            
+            <label for="testUrl">Test URL:</label>
+            <input type="text" id="testUrl" placeholder="https://www.example.com">
+            
+            <button id="findProxy">Find Proxy for URL</button>
+            
+            <div id="result" style="display: none;">
+                <h3>Result:</h3>
+                <div id="proxyResult"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Store the loaded PAC function
+        let pacFunction = null;
+        
+        document.getElementById('loadPac').addEventListener('click', async () => {
+            const pacUrl = document.getElementById('pacUrl').value.trim();
+            if (!pacUrl) {
+                showError('Please enter a PAC file URL');
+                return;
+            }
+            
+            try {
+                document.getElementById('loadingPac').style.display = 'block';
+                document.getElementById('errorPac').style.display = 'none';
+                
+                const response = await fetch(pacUrl, { 
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/x-javascript'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load PAC file: ${response.status} ${response.statusText}`);
+                }
+                
+                const pacText = await response.text();
+                document.getElementById('pacContent').value = pacText;
+                document.getElementById('loadingPac').style.display = 'none';
+                
+                parsePacFile(pacText);
+            } catch (error) {
+                document.getElementById('loadingPac').style.display = 'none';
+                showError(`Error loading PAC file: ${error.message}. You may need to download the PAC file manually and paste its content in the text area below.`);
+            }
+        });
+        
+        document.getElementById('parsePac').addEventListener('click', () => {
+            const pacText = document.getElementById('pacContent').value.trim();
+            if (!pacText) {
+                showError('Please enter PAC file content');
+                return;
+            }
+            
+            parsePacFile(pacText);
+        });
+        
+        document.getElementById('findProxy').addEventListener('click', () => {
+            const testUrl = document.getElementById('testUrl').value.trim();
+            if (!testUrl) {
+                showError('Please enter a URL to test');
+                return;
+            }
+            
+            if (!pacFunction) {
+                showError('Please load and parse a PAC file first');
+                return;
+            }
+            
+            try {
+                // Create a fake host from the URL
+                const url = new URL(testUrl);
+                const host = url.hostname;
+                
+                // Call the FindProxyForURL function
+                const proxyResult = pacFunction(testUrl, host);
+                
+                // Display the result
+                document.getElementById('proxyResult').textContent = proxyResult;
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('errorPac').style.display = 'none';
+            } catch (error) {
+                showError(`Error finding proxy: ${error.message}`);
+            }
+        });
+        
+        function parsePacFile(pacText) {
+            try {
+                // PAC files contain a function called FindProxyForURL
+                // We need to extract and evaluate this function
+                
+                // Add the necessary utility functions that PAC files might use
+                const pacScript = `
+                    function dnsResolve(host) { 
+                        // Simplified implementation, would actually return IP in a real environment
+                        console.log('Called dnsResolve for ' + host);
+                        return '127.0.0.1'; 
+                    }
+                    
+                    function isInNet(ip, subnet, mask) {
+                        console.log('Called isInNet: ' + ip + ', ' + subnet + ', ' + mask);
+                        return false; // Simplified
+                    }
+                    
+                    function isPlainHostName(host) {
+                        return (host.indexOf('.') < 0);
+                    }
+                    
+                    function dnsDomainIs(host, domain) {
+                        return (host.length >= domain.length &&
+                                host.substring(host.length - domain.length) == domain);
+                    }
+                    
+                    function localHostOrDomainIs(host, hostdom) {
+                        return (host == hostdom ||
+                                hostdom.lastIndexOf(host + '.', 0) == 0);
+                    }
+                    
+                    function isResolvable(host) {
+                        return true; // Simplified
+                    }
+                    
+                    function isInNetEx(ip, ipPrefix) {
+                        return false; // Simplified
+                    }
+                    
+                    function dnsResolveEx(host) {
+                        return '127.0.0.1'; // Simplified
+                    }
+                    
+                    function myIpAddress() {
+                        return '127.0.0.1'; // Simplified
+                    }
+                    
+                    function dnsDomainLevels(host) {
+                        return host.split('.').length - 1;
+                    }
+                    
+                    function shExpMatch(str, pattern) {
+                        // Convert the shell expression pattern to a regex pattern
+                        var regexPattern = pattern.replace(/\./g, '\\.')
+                                                .replace(/\*/g, '.*')
+                                                .replace(/\?/g, '.');
+                        var regex = new RegExp('^' + regexPattern + '$');
+                        return regex.test(str);
+                    }
+                    
+                    function weekdayRange(wd1, wd2, gmt) {
+                        return true; // Simplified
+                    }
+                    
+                    function dateRange(day1, month1, year1, day2, month2, year2, gmt) {
+                        return true; // Simplified
+                    }
+                    
+                    function timeRange(hour1, min1, sec1, hour2, min2, sec2, gmt) {
+                        return true; // Simplified
+                    }
+                    
+                    ${pacText}
+                    
+                    FindProxyForURL;  // Return the function itself
+                `;
+                
+                // Evaluate the script and get the FindProxyForURL function
+                pacFunction = eval(pacScript);
+                
+                if (typeof pacFunction !== 'function') {
+                    throw new Error('PAC file does not contain a valid FindProxyForURL function');
+                }
+                
+                document.getElementById('errorPac').style.display = 'none';
+            } catch (error) {
+                showError(`Error parsing PAC file: ${error.message}`);
+                pacFunction = null;
+            }
+        }
+        
+        function showError(message) {
+            const errorElement = document.getElementById('errorPac');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
