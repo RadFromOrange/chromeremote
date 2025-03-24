@@ -1,0 +1,17 @@
+FROM codercom/code-server:latest
+
+# Copy the custom product.json file to the correct location
+COPY product.json /usr/lib/code-server/lib/vscode/product.json
+
+# Fix the workbench.js file - use root user temporarily to edit the file
+USER root
+RUN sed -i 's/when:C.or(fe.Setup.hidden.negate(),fe.Setup.installed,fe.panelParticipantRegistered,fe.extensionInvalid)/when:undefined/g' /usr/lib/code-server/lib/vscode/out/vs/code/browser/workbench/workbench.js
+RUN sed -i 's/ne.as(As.ViewsRegistry).registerViews(fEs,mQ)//g'  /usr/lib/code-server/lib/vscode/out/vs/code/browser/workbench/workbench.js
+RUN sed -i 's/ne.as(As.ViewsRegistry).registerViews(gEs,U7)//g'  /usr/lib/code-server/lib/vscode/out/vs/code/browser/workbench/workbench.js
+
+# Make sure the files have the correct permissions and ownership
+RUN chmod 644 /usr/lib/code-server/lib/vscode/product.json && \
+    chmod 644 /usr/lib/code-server/lib/vscode/out/vs/code/browser/workbench/workbench.js
+
+# Switch back to the coder user (default user in code-server image)
+USER coder
