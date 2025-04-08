@@ -1,0 +1,36 @@
+import http from 'k6/http';
+import { sleep } from 'k6';
+
+// Generate a large header value (adjust size as needed)
+// Aim for something significant, maybe a few KB. Repeat a string.
+const largeHeaderValue = 'X'.repeat(4 * 1024); // 4KB header value
+
+export const options = {
+  vus: 50, // Virtual Users (concurrent requests)
+  duration: '30s', // How long to run the test
+};
+
+export default function () {
+  const url = 'http://YOUR_NGINX_PROXY_IP_OR_HOSTNAME/your/path'; // Replace with your target URL
+  const params = {
+    headers: {
+      'Content-Type': 'application/json', // Example standard header
+      'X-Custom-Heavy-Header-1': largeHeaderValue,
+      'X-Custom-Heavy-Header-2': 'Another header with some content',
+      'User-Agent': 'k6-load-test',
+      // Add more headers if needed to reach your desired total size
+      'X-Custom-Heavy-Header-3': 'A'.repeat(2 * 1024), // Another 2KB
+    },
+  };
+
+  // Ensure the total size of headers (+ request line) might exceed the default buffer (usually 4k or 8k)
+  // but fits within your configured 4 * 16k = 64k limit.
+  // You might also test exceeding 64k to see Nginx error handling.
+
+  const res = http.get(url, params);
+
+  // Optional: Check response status or content
+  // check(res, { 'status was 200': (r) => r.status == 200 });
+
+  sleep(1); // Pause for 1 second between requests per VU
+}
