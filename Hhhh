@@ -1,0 +1,80 @@
+For giving all users every right in the `public` schema in Vault's PostgreSQL creation statement, here's how to do it:
+
+## Method 1: Vault CLI with Public Schema
+
+```bash
+vault write database/roles/my-role \
+    db_name=my-postgres-db \
+    creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
+                        GRANT ALL ON SCHEMA public TO \"{{name}}\"; \
+                        GRANT ALL ON ALL TABLES IN SCHEMA public TO \"{{name}}\"; \
+                        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO \"{{name}}\"; \
+                        GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO \"{{name}}\"; \
+                        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO \"{{name}}\"; \
+                        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO \"{{name}}\"; \
+                        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO \"{{name}}\";" \
+    default_ttl="1h" \
+    max_ttl="24h"
+```
+
+## Method 2: JSON Configuration
+
+```json
+{
+  "db_name": "my-postgres-db",
+  "creation_statements": [
+    "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
+    "GRANT ALL ON SCHEMA public TO \"{{name}}\";",
+    "GRANT ALL ON ALL TABLES IN SCHEMA public TO \"{{name}}\";",
+    "GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO \"{{name}}\";",
+    "GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO \"{{name}}\";",
+    "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO \"{{name}}\";",
+    "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO \"{{name}}\";",
+    "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO \"{{name}}\";"
+  ],
+  "default_ttl": "1h",
+  "max_ttl": "24h"
+}
+```
+
+## Method 3: Simplified Version (Core Permissions Only)
+
+If you want a shorter version with just the essential permissions:
+
+```bash
+vault write database/roles/my-role \
+    db_name=my-postgres-db \
+    creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
+                        GRANT ALL ON SCHEMA public TO \"{{name}}\"; \
+                        GRANT ALL ON ALL TABLES IN SCHEMA public TO \"{{name}}\"; \
+                        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO \"{{name}}\";" \
+    default_ttl="1h" \
+    max_ttl="24h"
+```
+
+## Method 4: Super User Approach (Not Recommended for Production)
+
+For maximum permissions (including ability to create other roles):
+
+```bash
+vault write database/roles/my-role \
+    db_name=my-postgres-db \
+    creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}' SUPERUSER;" \
+    default_ttl="1h" \
+    max_ttl="24h"
+```
+
+## What This Gives You
+
+The role will have:
+- Full access to the `public` schema
+- All privileges on existing tables, sequences, and functions
+- All privileges on future tables, sequences, and functions (via default privileges)
+- Ability to create new objects in the public schema
+
+## Notes
+
+- The `public` schema is the default schema in PostgreSQL
+- These permissions will apply to each dynamically created user from Vault
+- Replace `my-postgres-db` with your actual database connection name
+- Adjust TTL values as needed for your use case
